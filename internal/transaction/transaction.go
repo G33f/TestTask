@@ -7,3 +7,13 @@ type Transaction struct {
 	Status   string
 	Amount   int
 }
+
+func NewTransaction(sender, receiver string, amount int) Transaction {
+	return Transaction{
+		Id:       "",
+		Sender:   sender,
+		Receiver: receiver,
+		Status:   "send",
+		Amount:   0,
+	}
+}

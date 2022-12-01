@@ -94,3 +94,10 @@ func (r *repository) Update(ctx context.Context, t transaction.Transaction) erro
 	}
 	return nil
 }
+
+func NewRepository(client PostgreSQL.Client, logger *logging.Logger) transaction.Repository {
+	return &repository{
+		client: client,
+		logger: logger,
+	}
+}

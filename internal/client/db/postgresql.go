@@ -82,11 +82,11 @@ func (r *repository) FindOne(ctx context.Context, id string) (client.Client, err
 func (r *repository) Update(ctx context.Context, c client.Client) error {
 	q := `
 		UPDATE clientvalet
-		SET balance = $2
-		WHERE id = $1;
+		SET balance = $1
+		WHERE id = $2;
 	`
 	r.logger.Trace(fmt.Sprintf("SQL Query: %s", formatQuery(q)))
-	err := r.client.QueryRow(ctx, q, c.Id, c.Balance).Scan()
+	_, err := r.client.Exec(ctx, q, c.Balance, c.Id)
 	if err != nil {
 		return err
 	}

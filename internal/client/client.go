@@ -12,10 +12,10 @@ type Client struct {
 }
 
 func (c *Client) MinusMoney(amount int) error {
-	if amount > c.Balance {
+	if c.Balance+amount < 0 {
 		return fmt.Errorf("you dont have enogh money on your accaunt")
 	}
-	c.Balance -= amount
+	c.Balance += amount
 	return nil
 }
 

@@ -31,6 +31,7 @@ func GetClientFromDB(ctx context.Context, postgresql client.Repository) error {
 	clientTransferQueue := map[client.Client]chan int{}
 	for _, val := range clientArray {
 		c := client.NewClient(val.FirstName, val.LastName, val.Balance)
+		c.Id = val.Id
 		clientMap[val.Id] = c
 		clientTransferQueue[c] = make(chan int)
 	}
@@ -53,7 +54,6 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
-	for k, val := range ClientMaps {
-		fmt.Println("Client ID is ", k, " and his valet data is", val)
-	}
+
+	transaction.Transaction(ctx, ClientMaps["eca548a8-8833-4152-8629-9e0fa69d8ca7"], postgresql, -100)
 }

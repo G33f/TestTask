@@ -1,10 +1,10 @@
-module example.com/m
+module TestTask
 
 go 1.18
 
 require (
 	github.com/jackc/pgx/v5 v5.1.1
-	github.com/jackc/puddle v1.3.0
+	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.14.0
 )
 

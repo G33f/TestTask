@@ -1,9 +1,9 @@
 package PostgreSQL
 
 import (
+	"TestTask/pkg/repository/PostgreSQL/utils"
+	"TestTask/pkg/repository/PostgreSQL/utils/config"
 	"context"
-	"example.com/m/author/repository/PostgreSQL/utils"
-	"example.com/m/author/repository/PostgreSQL/utils/config"
 	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -16,9 +16,6 @@ type Client interface {
 	Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error)
 	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
 	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
-	Begin(ctx context.Context) (pgx.Tx, error)
-	BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error)
-	BeginTxFunc(ctx context.Context, txOptions pgx.TxOptions, f func(pgx.Tx) error) error
 }
 
 func NewClient(ctx context.Context, sc config.StorageConfig) (err error, pool *pgxpool.Pool) {

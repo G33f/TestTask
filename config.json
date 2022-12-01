@@ -2,7 +2,7 @@
   "storage": {
     "host": "localhost",
     "port": "5432",
-    "database": "postgres",
+    "database": "client",
     "username": "postgres",
     "password": "postgres",
     "maxAttempts": 5

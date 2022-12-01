@@ -9,13 +9,14 @@ import (
 
 var Queue map[client.Client]chan int
 
-func Transaction(ctx context.Context, c client.Client, postgresql client.Repository, amount int) {
+func MakeTransaction(ctx context.Context, cli string, postgresql client.Repository, amount int, wg *sync.WaitGroup) error {
+	c := client.ClientMaps[cli]
+	var e error
 	if _, err := Queue[c]; err {
 		Queue[c] = make(chan int)
 	}
-	ls := sync.WaitGroup{}
-	ls.Add(1)
-	go func(c client.Client, a <-chan int) {
+	go func(c *client.Client, a <-chan int) {
+		defer wg.Done()
 		select {
 		case am := <-a:
 			if am >= 0 {
@@ -23,18 +24,33 @@ func Transaction(ctx context.Context, c client.Client, postgresql client.Reposit
 			} else {
 				if err := c.MinusMoney(am); err != nil {
 					log.Println(err)
+					e = err
 				}
 			}
 		}
-		if err := postgresql.Update(ctx, c); err != nil {
+		if err := postgresql.Update(ctx, *c); err != nil {
 			log.Println(err)
 		}
-		ls.Done()
-	}(c, Queue[c])
+	}(&c, Queue[c])
 	Queue[c] <- amount
-	ls.Wait()
+	return e
 }
 
-//func TransactionsBetweenClients(ctx context.Context, sender client.Client, receiver client.Client, postgresql client.Repository, amount int) {
-//
-//}
+func TransactionsBetweenClients(ctx context.Context, transaction Transaction, postgresql Repository, clientRep client.Repository) {
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	err := MakeTransaction(ctx, transaction.Sender, clientRep, -transaction.Amount, &wg)
+	if err != nil {
+		return
+	}
+	wg.Wait()
+	transaction.Status = "receive"
+	err = postgresql.Update(ctx, transaction)
+	if err != nil {
+		return
+	}
+	err = MakeTransaction(ctx, transaction.Receiver, clientRep, transaction.Amount, &wg)
+	if err != nil {
+		return
+	}
+}

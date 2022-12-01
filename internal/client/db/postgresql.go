@@ -68,7 +68,7 @@ func (r *repository) FindAll(ctx context.Context) (c []client.Client, err error)
 
 func (r *repository) FindOne(ctx context.Context, id string) (client.Client, error) {
 	q := `
-		SELECT id, name FROM public.author WHERE id = $1
+		SELECT id, name FROM public.clientvalet WHERE id = $1
 	`
 	r.logger.Trace(fmt.Sprintf("SQL Query: %s", formatQuery(q)))
 	var c client.Client

@@ -1,14 +1,17 @@
 package main
 
 import (
+	"TestTask/handler/serverHandler"
 	"TestTask/internal/client"
 	clientDB "TestTask/internal/client/db"
+	"TestTask/internal/server"
 	"TestTask/internal/transaction"
 	transactionDB "TestTask/internal/transaction/db"
 	"TestTask/pkg/logging"
 	"TestTask/pkg/repository/PostgreSQL"
 	"TestTask/pkg/repository/PostgreSQL/utils/config"
 	"context"
+	"fmt"
 	"github.com/spf13/viper"
 	"log"
 )
@@ -40,4 +43,18 @@ func main() {
 
 	transaction.RecoverTransactionHistory(ctx, postgresqlTransaction, postgresqlClient)
 
+	Server := server.Server{}
+	if err = Server.NewConnection(); err != nil {
+		log.Println(err)
+		return
+	}
+
+	for {
+		conn, err := Server.Listener.Accept()
+		if err != nil {
+			fmt.Println("Error accepting: ", err.Error())
+		} else {
+			serverHandler.HandleRequest(ctx, conn, postgresqlTransaction, postgresqlClient)
+		}
+	}
 }

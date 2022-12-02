@@ -28,21 +28,16 @@ func NewClient(firstName, secondName string, valet int) Client {
 	return Client{FirstName: firstName, LastName: secondName, Balance: valet}
 }
 
-var ClientMaps map[string]Client
-
-func GetClientFromDB(ctx context.Context, postgresql Repository) (error, map[Client]chan int) {
+func GetClientFromDB(ctx context.Context, postgresql Repository) (error, map[string]chan int) {
 	clientArray, err := postgresql.FindAll(ctx)
 	if err != nil {
 		return err, nil
 	}
-	clientMap := map[string]Client{}
-	clientTransferQueue := map[Client]chan int{}
+	clientTransferQueue := map[string]chan int{}
 	for _, val := range clientArray {
 		c := NewClient(val.FirstName, val.LastName, val.Balance)
 		c.Id = val.Id
-		clientMap[val.Id] = c
-		clientTransferQueue[c] = make(chan int)
+		clientTransferQueue[val.Id] = make(chan int)
 	}
-	ClientMaps = clientMap
 	return nil, clientTransferQueue
 }

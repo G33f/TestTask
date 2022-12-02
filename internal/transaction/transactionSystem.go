@@ -8,15 +8,18 @@ import (
 	"sync"
 )
 
-var Queue map[client.Client]chan int
+var Queue map[string]chan int
 
 func MakeTransaction(ctx context.Context, cli string, postgresql client.Repository, amount int, wg *sync.WaitGroup) error {
-	c := client.ClientMaps[cli]
 	var e error
-	if _, err := Queue[c]; err {
-		Queue[c] = make(chan int)
+	c, err := postgresql.FindOne(ctx, cli)
+	if err != nil {
+		return err
 	}
-	go func(c *client.Client, a <-chan int) {
+	if _, err := Queue[cli]; err {
+		Queue[cli] = make(chan int)
+	}
+	go func(c client.Client, a <-chan int) {
 		defer wg.Done()
 		select {
 		case am := <-a:
@@ -26,14 +29,15 @@ func MakeTransaction(ctx context.Context, cli string, postgresql client.Reposito
 				if err := c.MinusMoney(am); err != nil {
 					log.Println(err)
 					e = err
+					return
 				}
 			}
 		}
-		if err := postgresql.Update(ctx, *c); err != nil {
+		if err := postgresql.Update(ctx, c); err != nil {
 			log.Println(err)
 		}
-	}(&c, Queue[c])
-	Queue[c] <- amount
+	}(c, Queue[cli])
+	Queue[cli] <- amount
 	return e
 }
 

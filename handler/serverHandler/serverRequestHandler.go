@@ -24,10 +24,14 @@ func HandleRequest(ctx context.Context, c net.Conn, postgresqlTransaction transa
 	request := strings.Split(tmp, " ")
 	if len(request) != 3 {
 		log.Println("Wrong transaction!")
+		return
 	}
 	tmp1 := strings.Split(request[2], "\n")
 	amount, err := strconv.Atoi(tmp1[0])
-	fmt.Println(amount)
+	if amount < 0 {
+		log.Println("Wrong transaction!")
+		return
+	}
 	tra := transaction.NewTransaction(request[0], request[1], amount)
 	err = postgresqlTransaction.Create(ctx, &tra)
 	fmt.Println(tra)

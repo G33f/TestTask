@@ -14,6 +14,6 @@ func NewTransaction(sender, receiver string, amount int) Transaction {
 		Sender:   sender,
 		Receiver: receiver,
 		Status:   "send",
-		Amount:   0,
+		Amount:   amount,
 	}
 }

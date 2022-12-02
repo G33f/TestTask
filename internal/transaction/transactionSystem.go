@@ -3,6 +3,7 @@ package transaction
 import (
 	"TestTask/internal/client"
 	"context"
+	"fmt"
 	"log"
 	"sync"
 )
@@ -38,9 +39,12 @@ func MakeTransaction(ctx context.Context, cli string, postgresql client.Reposito
 
 func TransactionsBetweenClients(ctx context.Context, transaction Transaction, postgresql Repository, clientRep client.Repository) {
 	wg := sync.WaitGroup{}
+	fmt.Println(transaction)
 	wg.Add(1)
 	err := MakeTransaction(ctx, transaction.Sender, clientRep, -transaction.Amount, &wg)
 	if err != nil {
+		transaction.Status = "closest"
+		err = postgresql.Update(ctx, transaction)
 		return
 	}
 	wg.Wait()
@@ -49,8 +53,12 @@ func TransactionsBetweenClients(ctx context.Context, transaction Transaction, po
 	if err != nil {
 		return
 	}
+	wg.Add(1)
 	err = MakeTransaction(ctx, transaction.Receiver, clientRep, transaction.Amount, &wg)
 	if err != nil {
 		return
 	}
+	transaction.Status = "closest"
+	err = postgresql.Update(ctx, transaction)
+	wg.Wait()
 }

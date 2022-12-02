@@ -1,7 +1,6 @@
 package client
 
 import (
-	"TestTask/internal/transaction"
 	"context"
 	"fmt"
 )
@@ -31,10 +30,10 @@ func NewClient(firstName, secondName string, valet int) Client {
 
 var ClientMaps map[string]Client
 
-func GetClientFromDB(ctx context.Context, postgresql Repository) error {
+func GetClientFromDB(ctx context.Context, postgresql Repository) (error, map[Client]chan int) {
 	clientArray, err := postgresql.FindAll(ctx)
 	if err != nil {
-		return err
+		return err, nil
 	}
 	clientMap := map[string]Client{}
 	clientTransferQueue := map[Client]chan int{}
@@ -44,7 +43,6 @@ func GetClientFromDB(ctx context.Context, postgresql Repository) error {
 		clientMap[val.Id] = c
 		clientTransferQueue[c] = make(chan int)
 	}
-	transaction.Queue = clientTransferQueue
 	ClientMaps = clientMap
-	return nil
+	return nil, clientTransferQueue
 }

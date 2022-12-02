@@ -46,7 +46,7 @@ func (r *repository) FindAllNotDone(ctx context.Context) (t []transaction.Transa
 	q := `
 		SELECT id, sender, receiver, amount, status
 		FROM public.transaction 
-		WHERE status != 'done';
+		WHERE status != 'closest';
 	`
 	r.logger.Trace(fmt.Sprintf("SQL Query: %s", formatQuery(q)))
 	rows, err := r.client.Query(ctx, q)

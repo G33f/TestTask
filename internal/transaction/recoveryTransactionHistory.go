@@ -7,8 +7,8 @@ import (
 	"sync"
 )
 
-func recoverTransactionHistory(ctx context.Context, postgresql Repository, clientRep client.Repository) {
-	transactions, err := postgresql.FindAllNotDone(ctx)
+func RecoverTransactionHistory(ctx context.Context, postgresqlTransaction Repository, postgresqlClient client.Repository) {
+	transactions, err := postgresqlTransaction.FindAllNotDone(ctx)
 	if err != nil {
 		log.Println(err)
 		return
@@ -16,9 +16,9 @@ func recoverTransactionHistory(ctx context.Context, postgresql Repository, clien
 	for _, val := range transactions {
 		switch val.Status {
 		case "send":
-			TransactionsBetweenClients(ctx, val, postgresql, clientRep)
+			go TransactionsBetweenClients(ctx, val, postgresqlTransaction, postgresqlClient)
 		case "receive":
-			err := MakeTransaction(ctx, val.Receiver, clientRep, val.Amount, &sync.WaitGroup{})
+			err := MakeTransaction(ctx, val.Receiver, postgresqlClient, val.Amount, &sync.WaitGroup{})
 			if err != nil {
 				continue
 			}
